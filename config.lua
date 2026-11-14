@@ -13,12 +13,16 @@ return {
     BankRange = 6.0, -- meters from a branch counter within which the server lets the player open the bank
     PaycheckInterval = 15, -- minutes between paydays for on-duty job members
 
+    -- Invoices jobs send to characters through the CreateInvoice export
+    InvoiceDueDays = 7, -- days a character has to pay an invoice before it shows as overdue, when the sender sets none
+
     -- What gets sent to the server logs
     Logs = {
         deposits = true, -- log cash deposits
         withdrawals = true, -- log cash withdrawals
         transfers = true, -- log transfers between accounts
-        adminActions = true, -- log staff actions such as freezing an account
+        invoices = true, -- log paid invoices
+        adminActions = true, -- log balance adjustments made with /bankadjust or the AdjustBalance export
         suspiciousThreshold = 500000, -- dollars at or above which a logged movement is marked as a security event
     },
 

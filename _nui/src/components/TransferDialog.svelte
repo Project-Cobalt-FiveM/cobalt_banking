@@ -38,7 +38,6 @@
     ondone();
   });
 
-  const sources = $derived(accounts.filter((account) => !account.frozen));
   const from = $derived(accounts.find((account) => account.id === fromId) ?? initial);
   const fee = $derived(Math.floor((amount * feePercent) / 100));
   const overBalance = $derived(amount + fee > from.balance);
@@ -70,7 +69,7 @@
     <Dialog title={t('ui.transfer.title')} description={t('ui.transfer.description')} {onclose} onsubmit={submit}>
       <div class="flex flex-col gap-1.5">
         <FieldLabel for="transfer-from">{t('ui.dialog.from')}</FieldLabel>
-        <AccountPicker id="transfer-from" accounts={sources} value={from} onchange={changeSource} />
+        <AccountPicker id="transfer-from" {accounts} value={from} onchange={changeSource} />
       </div>
       <div class="flex flex-col gap-1.5">
         <FieldLabel for="transfer-to" aside={t('ui.transfer.to_hint')}>{t('ui.dialog.to')}</FieldLabel>

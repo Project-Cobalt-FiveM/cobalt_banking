@@ -17,9 +17,9 @@ const overview: Overview = {
   transferFeePercent: 0,
   maxSharedMembers: 8,
   accounts: [
-    { id: 'CB 4821 0093', label: 'Personal Account', type: 'personal', balance: 55000, frozen: false, primary: true, members: 1, owner: true },
-    { id: 'CB 3309 5120', label: 'House fund', type: 'shared', balance: 3200, frozen: false, primary: false, members: 3, owner: true },
-    { id: 'society_police', label: 'LSPD', type: 'society', balance: 482150, frozen: false, primary: false, members: 0, owner: false },
+    { id: 'CB 4821 0093', label: 'Personal Account', type: 'personal', balance: 55000, primary: true, members: 1, owner: true },
+    { id: 'CB 3309 5120', label: 'House fund', type: 'shared', balance: 3200, primary: false, members: 3, owner: true },
+    { id: 'society_police', label: 'LSPD', type: 'society', balance: 482150, primary: false, members: 0, owner: false },
   ],
 };
 

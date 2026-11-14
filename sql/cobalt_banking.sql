@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
   `label` VARCHAR(100) DEFAULT NULL,
   `balance` BIGINT NOT NULL DEFAULT 0,
   `owner_cid` VARCHAR(50) DEFAULT NULL,
-  `frozen` TINYINT UNSIGNED NOT NULL DEFAULT 0,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_updated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -57,4 +56,28 @@ CREATE TABLE IF NOT EXISTS `bank_withdraw_limits` (
   PRIMARY KEY (`citizenid`, `day`),
   KEY `day` (`day`),
   CONSTRAINT `fk_bank_withdraw_limits_player` FOREIGN KEY (`citizenid`) REFERENCES `players` (`citizenid`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `invoices` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `issuer` VARCHAR(32) NOT NULL,
+  `citizenid` VARCHAR(50) NOT NULL,
+  `payee` VARCHAR(64) NOT NULL,
+  `issuer_citizenid` VARCHAR(50) DEFAULT NULL,
+  `issuer_name` VARCHAR(120) DEFAULT NULL,
+  `summary` VARCHAR(255) NOT NULL DEFAULT '',
+  `amount` INT UNSIGNED NOT NULL,
+  `status` ENUM('unpaid', 'paid', 'void') NOT NULL DEFAULT 'unpaid',
+  `data` LONGTEXT NOT NULL DEFAULT '{}' CHECK (JSON_VALID(`data`)),
+  `due_at` DATETIME NOT NULL,
+  `declined_at` DATETIME DEFAULT NULL,
+  `paid_at` DATETIME DEFAULT NULL,
+  `void_reason` VARCHAR(255) DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `citizen_status` (`citizenid`, `status`),
+  KEY `issuer_status` (`issuer`, `status`, `due_at`),
+  KEY `issuer_citizenid` (`issuer_citizenid`),
+  CONSTRAINT `fk_invoices_player` FOREIGN KEY (`citizenid`) REFERENCES `players` (`citizenid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_invoices_issuer` FOREIGN KEY (`issuer_citizenid`) REFERENCES `players` (`citizenid`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -38,14 +38,14 @@
       </div>
     </div>
     <div class="flex flex-col items-end gap-0.5">
-      <span class="text-xs font-medium text-muted-foreground">{account.frozen ? t('ui.view.account_frozen') : t('ui.view.available')}</span>
+      <span class="text-xs font-medium text-muted-foreground">{t('ui.view.available')}</span>
       <span class="text-[2.5rem]/11 font-semibold tracking-tight text-foreground tabular-nums">{formatMoney(account.balance)}</span>
     </div>
   </header>
 
   <div class="flex gap-2">
     {#each actions as { kind, labelKey, icon: ActionIcon }, index (kind)}
-      <Button tone={index === 0 ? 'primary' : 'secondary'} size="lg" grow disabled={account.frozen} onclick={() => onaction(kind)}>
+      <Button tone={index === 0 ? 'primary' : 'secondary'} size="lg" grow onclick={() => onaction(kind)}>
         <ActionIcon size={16} weight="fill" />
         {t(labelKey)}
       </Button>

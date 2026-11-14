@@ -18,7 +18,7 @@ local DB <const> = {}
 ---@field receipt? string
 
 local ACCOUNT_COLUMNS <const> = [[
-    account_id AS id, account_id AS accountId, type, label, balance, owner_cid AS ownerCid, frozen,
+    account_id AS id, account_id AS accountId, type, label, balance, owner_cid AS ownerCid,
     UNIX_TIMESTAMP(created_at) AS createdAt
 ]]
 
@@ -32,7 +32,6 @@ local MOVE <const> = [[
     UPDATE bank_accounts SET balance = balance + ?, last_updated = CURRENT_TIMESTAMP
     WHERE account_id = ? AND balance + ? >= 0
 ]]
-local MOVE_UNFROZEN <const> = MOVE .. ' AND frozen = 0'
 
 ---@param accountId AccountId
 local function syncPlayerDataBank(accountId)
@@ -77,15 +76,14 @@ function BankTx:record(accountId, entry, balanceAfter)
     })
 end
 
----Moves `delta` in or out of an account; refuses a frozen account unless `ignoreFrozen`, and never lets the balance go below zero.
+---Moves `delta` in or out of an account, never letting the balance go below zero.
 ---@param accountId AccountId
 ---@param delta integer
 ---@param entry BankTxEntry
----@param ignoreFrozen? boolean
 ---@return integer? balanceAfter
 ---@return integer? transactionId
-function BankTx:move(accountId, delta, entry, ignoreFrozen)
-    if self:exec(ignoreFrozen and MOVE or MOVE_UNFROZEN, { delta, accountId, delta }) == 0 then return end
+function BankTx:move(accountId, delta, entry)
+    if self:exec(MOVE, { delta, accountId, delta }) == 0 then return end
 
     local balanceAfter <const> = self.query('SELECT balance FROM bank_accounts WHERE account_id = ?', { accountId })[1].balance
     local transactionId <const> = self:record(accountId, {
@@ -121,12 +119,11 @@ end
 ---@param accountId AccountId
 ---@param delta integer
 ---@param entry BankTxEntry
----@param ignoreFrozen? boolean
 ---@return integer? balanceAfter
-function DB.Move(accountId, delta, entry, ignoreFrozen)
+function DB.Move(accountId, delta, entry)
     local balanceAfter
     DB.Atomic(function(tx)
-        balanceAfter = tx:move(accountId, delta, entry, ignoreFrozen)
+        balanceAfter = tx:move(accountId, delta, entry)
         return balanceAfter ~= nil
     end)
     return balanceAfter
@@ -266,7 +263,7 @@ local PLAYER_NAME <const> = "CONCAT_WS(' ', JSON_VALUE(%s.charinfo, '$.firstname
 
 ---@param alias string
 ---@return string
-local function playerName(alias)
+function DB.PlayerName(alias)
     return PLAYER_NAME:format(alias, alias)
 end
 
@@ -366,28 +363,28 @@ function DB.GetActivity(accountId, limit)
         LEFT JOIN players p ON p.citizenid = c.owner_cid
         WHERE t.account_id = ?
         ORDER BY t.created_at DESC, t.id DESC LIMIT ?
-    ]]):format(playerName('p')), { accountId, limit })
+    ]]):format(DB.PlayerName('p')), { accountId, limit })
 end
 
 ---@param citizenid string
 ---@return { citizenid: string, name: string }?
 function DB.FindPlayer(citizenid)
     return MySQL.single.await(
-        'SELECT citizenid, ' .. playerName('players') .. ' AS name FROM players WHERE citizenid = ?',
+        'SELECT citizenid, ' .. DB.PlayerName('players') .. ' AS name FROM players WHERE citizenid = ?',
         { citizenid }
     )
 end
 
 ---@param accountId AccountId
----@return { accountId: AccountId, label: string?, type: string, frozen: 0|1, holder: string? }?
+---@return { accountId: AccountId, label: string?, type: string, holder: string? }?
 function DB.GetAccountHolder(accountId)
     return MySQL.single.await(([[
-        SELECT a.account_id AS accountId, a.label, a.type, a.frozen,
+        SELECT a.account_id AS accountId, a.label, a.type,
             IF(a.type = 'personal', %s, a.label) AS holder
         FROM bank_accounts a
         LEFT JOIN players p ON p.citizenid = a.owner_cid
         WHERE a.account_id = ?
-    ]]):format(playerName('p')), { accountId })
+    ]]):format(DB.PlayerName('p')), { accountId })
 end
 
 ---@class BankStatementRow
@@ -416,7 +413,7 @@ local STATEMENT_SELECT <const> = ([[
     LEFT JOIN bank_accounts c ON c.account_id = t.counterparty_account_id
     LEFT JOIN players p ON p.citizenid = c.owner_cid
     LEFT JOIN players i ON i.citizenid = t.initiated_by
-]]):format(playerName('p'), playerName('i'))
+]]):format(DB.PlayerName('p'), DB.PlayerName('i'))
 
 local DIRECTION_FILTER <const> = {
     all = '',
@@ -462,11 +459,11 @@ function DB.GetRecentRecipients(citizenid, limit)
         FROM bank_transactions t
         JOIN bank_accounts c ON c.account_id = t.counterparty_account_id
         LEFT JOIN players p ON p.citizenid = c.owner_cid
-        WHERE t.initiated_by = ? AND t.type = 'transfer_out' AND c.frozen = 0
+        WHERE t.initiated_by = ? AND t.type = 'transfer_out'
           AND (c.owner_cid IS NULL OR c.owner_cid <> ?)
         GROUP BY t.counterparty_account_id, c.type, c.label, p.charinfo
         ORDER BY MAX(t.id) DESC LIMIT ?
-    ]]):format(playerName('p')), { citizenid, citizenid, limit })
+    ]]):format(DB.PlayerName('p')), { citizenid, citizenid, limit })
 end
 
 ---@param accountId AccountId
@@ -478,7 +475,7 @@ function DB.GetMembers(accountId)
         JOIN players p ON p.citizenid = m.citizenid
         WHERE m.account_id = ?
         ORDER BY m.id
-    ]]):format(playerName('p')), { accountId })
+    ]]):format(DB.PlayerName('p')), { accountId })
 end
 
 local LOCK_ACCOUNT <const> = 'SELECT account_id FROM bank_accounts WHERE account_id = ? FOR UPDATE'

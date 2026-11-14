@@ -50,7 +50,9 @@
         "admin_adjustment": "Adjustment by the bank",
         "paycheck": "Paycheck from %s",
         "payday_one": "Payday, 1 employee",
-        "payday_many": "Payday, %d employees"
+        "payday_many": "Payday, %d employees",
+        "invoice": "Invoice %s",
+        "invoice_cash": "%s, paid in cash"
     },
     "error": {
         "walk_up": "Walk up to a bank or ATM first",
@@ -60,8 +62,6 @@
         "invalid_account_type": "That kind of account doesn't exist",
         "account_limit": "You already have the most accounts of this kind",
         "account_not_found": "Account not found",
-        "account_frozen": "This account is frozen",
-        "checking_frozen": "Your checking account is frozen",
         "no_permission": "You can't move money from this account",
         "insufficient_funds": "Not enough money in this account",
         "not_enough_cash": "Not enough cash. You have $%d.",
@@ -81,8 +81,6 @@
         "invalid_amount": "Enter a whole dollar amount",
         "not_found": "Recipient account not found",
         "no_permission": "You can't move money from this account",
-        "account_frozen": "This account is frozen",
-        "recipient_frozen": "The recipient's account is frozen",
         "same_account": "Pick a different account to send to",
         "insufficient_funds": "Not enough money in this account"
     },
@@ -103,14 +101,12 @@
         "account": {
             "checking": "Checking",
             "fallback": "Account",
-            "frozen": "Frozen",
             "default": "Default",
             "member_one": "1 member",
             "member_many": "%d members",
             "boss_access": "Boss access"
         },
         "view": {
-            "account_frozen": "Account frozen",
             "available": "Available balance",
             "deposit": "Deposit",
             "withdraw": "Withdraw",
@@ -197,7 +193,7 @@
             "verified": "Verified",
             "placeholder": "e.g. ABC12345 or CB 7710 2284",
             "searching": "Looking up…",
-            "missing": "No open account matches that state ID or number."
+            "missing": "No account matches that state ID or number."
         },
         "sent": {
             "title": "Transfer sent",

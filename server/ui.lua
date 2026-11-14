@@ -111,7 +111,6 @@ local function accountView(account, citizenid, primaryId)
         label = account.label,
         type = account.type,
         balance = account.balance,
-        frozen = account.frozen == 1,
         primary = account.accountId == primaryId,
         members = account.members and #account.members or 0,
         owner = account.ownerCid == citizenid,
@@ -167,7 +166,6 @@ local function movableAccount(citizenid, accountId)
     local account <const> = DB.GetAccount(accountId)
 
     if not account then return nil, locale('error.account_not_found') end
-    if account.frozen == 1 then return nil, locale('error.account_frozen') end
 
     return account
 end
@@ -340,7 +338,7 @@ lib.callback.register('cobalt_banking:withdraw', function(source, data)
             type = TransactionType.DEPOSIT,
             description = locale('statement.withdrawal_refund'),
             initiated_by = citizenid,
-        }, true)
+        })
 
         return fail(locale('error.cash_handover_failed'))
     end
@@ -441,10 +439,6 @@ lib.callback.register('cobalt_banking:createAccount', function(source, data)
 
     if deposit > 0 and not primary then
         return fail(locale('error.no_checking'))
-    end
-
-    if deposit > 0 and primary.frozen == 1 then
-        return fail(locale('error.checking_frozen'))
     end
 
     local accountType <const> = enums.AccountType.SHARED

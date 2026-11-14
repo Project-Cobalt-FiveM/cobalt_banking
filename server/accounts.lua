@@ -231,7 +231,7 @@ function Accounts.SocietyLabel(orgName)
 end
 
 ---@param query string account number or citizen ID
----@return { accountId: AccountId, label: string?, type: string, frozen: 0|1, holder: string? }?
+---@return { accountId: AccountId, label: string?, type: string, holder: string? }?
 function Accounts.FindHolder(query)
     local holder <const> = DB.GetAccountHolder(canonicalNumber(query))
 
@@ -280,7 +280,6 @@ function Accounts.ListFor(citizenid)
                 type = account.type,
                 name = isSociety and Accounts.SocietyLabel(account.label or '') or account.label or account.accountId,
                 balance = account.balance,
-                frozen = account.frozen == 1,
                 primary = account.accountId == primaryId,
                 role = role,
             }

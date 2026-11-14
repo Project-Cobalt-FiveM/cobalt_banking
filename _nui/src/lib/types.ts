@@ -15,7 +15,6 @@ export interface Account {
   label: string | null;
   type: AccountType;
   balance: number;
-  frozen: boolean;
   primary: boolean;
   members: number;
   owner: boolean;

@@ -13,7 +13,7 @@ local function signed(amount)
     return (amount >= 0 and '+' or '') .. tostring(amount)
 end
 
----Credits or debits an account, frozen or not, without letting its balance go below zero.
+---Credits or debits an account without letting its balance go below zero.
 ---@param account string
 ---@param amount number a whole amount; negative debits
 ---@param details? BankingDetails
@@ -35,7 +35,7 @@ function Admin.AdjustBalance(account, amount, details)
         type = delta > 0 and 'admin_credit' or 'admin_debit',
         description = reason,
         initiated_by = initiator,
-    }, true)
+    })
 
     if not newBalance then return false, locale('error.insufficient_funds') end
 

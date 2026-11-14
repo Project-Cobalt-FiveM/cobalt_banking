@@ -5,6 +5,7 @@ local Transactions <const> = require 'server.transactions'
 local Payroll <const> = require 'server.payroll'
 local Statements <const> = require 'server.statements'
 local Members <const> = require 'server.members'
+local Invoices <const> = require 'server.invoices'
 
 exports('GetAccount', Accounts.Resolve)
 exports('GetBalance', function(account)
@@ -27,3 +28,11 @@ exports('SendTransfer', Transactions.Send)
 exports('GetAccountMembers', Members.List)
 exports('InviteMember', Members.Invite)
 exports('RevokeMember', Members.Revoke)
+
+exports('CreateInvoice', Invoices.Create)
+exports('GetInvoice', Invoices.Get)
+exports('GetInvoices', Invoices.List)
+exports('GetInvoiceTotals', Invoices.Totals)
+exports('PayInvoice', Invoices.Pay)
+exports('DeclineInvoice', Invoices.Decline)
+exports('VoidInvoice', Invoices.Void)

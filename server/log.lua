@@ -25,6 +25,24 @@ function Log.Transaction(source, txType, amount, accountId)
     }, level)
 end
 
+---@param invoice BankingInvoice
+---@param paidWith BankingInvoicePaidWith
+function Log.Invoice(invoice, paidWith)
+    if not config.Logs.invoices then return end
+
+    local level <const> = invoice.amount >= config.Logs.suspiciousThreshold and 'security' or 'info'
+    local message <const> = ('Invoice %d paid by %s, $%d'):format(invoice.id, paidWith, invoice.amount)
+
+    exports.cobalt_core:Log('banking.invoice', message, {
+        invoiceId = invoice.id,
+        issuer = invoice.issuer,
+        citizenid = invoice.citizenid,
+        payee = invoice.payee,
+        amount = invoice.amount,
+        paidWith = paidWith,
+    }, level)
+end
+
 ---@param adminCitizenid string
 ---@param action string
 ---@param accountId AccountId

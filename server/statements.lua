@@ -114,7 +114,7 @@ function Statements.FindRecipient(query)
 
     local holder <const> = Accounts.FindHolder(trimmed)
 
-    if not holder or holder.frozen == 1 then return end
+    if not holder then return end
 
     return {
         accountId = holder.accountId,

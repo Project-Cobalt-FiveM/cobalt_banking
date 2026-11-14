@@ -13,8 +13,8 @@
 ---| 'transfer_out'
 ---| 'fee'
 ---| 'paycheck'
----| 'bill_paid' a character paying an org's bill through `Transfer` with `bill = true`
----| 'bill_received' the org's side of that bill
+---| 'bill_paid' a character paying an invoice, or a `Transfer` with `bill = true`
+---| 'bill_received' the payee's side of that bill
 ---| 'admin_credit'
 ---| 'admin_debit'
 
@@ -30,7 +30,6 @@
 ---@field label string?
 ---@field balance integer
 ---@field ownerCid string?
----@field frozen 0|1
 ---@field createdAt integer epoch seconds
 ---@field members? BankingAccountMember[] only on rows the bank app loads with their members
 
@@ -49,10 +48,11 @@
 ---| 'no_permission'
 ---| 'same_account'
 ---| 'insufficient_funds'
----| 'account_frozen'
----| 'recipient_frozen'
 ---| 'already_member'
 ---| 'member_limit'
+---| 'invalid_invoice' a malformed invoice, filter, payment method or void reason
+---| 'settled' the invoice is already paid or void
+---| 'payer_offline' a cash payment needs the payer online
 
 ---@class BankingRefusal
 ---@field ok false
@@ -63,7 +63,6 @@
 ---@field type BankingAccountType
 ---@field name string the account label, or the org's label for a society account
 ---@field balance integer
----@field frozen boolean
 ---@field primary boolean
 ---@field role BankingMemberRole on a society account: `owner` for a boss, `member` with the `society` rank permission, `viewer` for the rest of the org
 
@@ -132,6 +131,85 @@
 ---@field maxMembers integer
 ---@field members BankingMember[]
 
+---@alias BankingInvoiceStatus
+---| 'unpaid'
+---| 'overdue' unpaid past `dueAt`
+---| 'paid'
+---| 'void'
+
+---@alias BankingInvoiceMethod
+---| 'bank' from the payer's personal account; a short balance records `declinedAt`
+---| 'cash' from the payer's pocket; needs them online
+---| 'cash_or_bank' cash when they're online and carry enough, the bank otherwise
+---| 'manual' marks it paid without moving money, for payment taken some other way
+
+---@alias BankingInvoicePaidWith 'bank'|'cash'|'manual'
+
+---@class BankingInvoiceLine
+---@field label string
+---@field amount integer
+
+---@class BankingInvoiceData
+---@field lines? BankingInvoiceLine[] the itemized charges behind `amount`
+---@field reportId? integer the issuer's report the invoice bills for
+---@field [string] any anything else the issuer keeps on it
+
+---@class BankingInvoice
+---@field id integer
+---@field issuer string the job, gang or kind that sent it, such as `ambulance`
+---@field citizenid string the character who owes it
+---@field payerName string
+---@field payee BankingAccountId the account it pays into
+---@field issuerCitizenid string? the character who wrote it; nil when the system sent it or that character was deleted
+---@field issuerName string?
+---@field summary string what it's for, shown on the bank statement; may be empty
+---@field amount integer
+---@field status BankingInvoiceStatus
+---@field data BankingInvoiceData
+---@field dueAt integer epoch seconds
+---@field createdAt integer epoch seconds
+---@field declinedAt integer? epoch seconds the payer last turned it down or their bank couldn't cover it
+---@field paidAt integer? epoch seconds
+---@field voidReason string?
+
+---@class BankingInvoiceInput
+---@field issuer string the job, gang or kind sending it, up to 32 characters
+---@field citizenid string the character who owes it
+---@field amount number a whole amount from 1 to 1000000000
+---@field summary? string up to 255 characters
+---@field payee? BankingAccountRef the account it pays into; defaults to `society_<issuer>`
+---@field issuerCitizenid? string the character writing it
+---@field issuerName? string up to 120 characters; defaults to the name of `issuerCitizenid`
+---@field dueDays? integer 1 to 365; defaults to `InvoiceDueDays` in the config
+---@field data? BankingInvoiceData
+
+---@class BankingInvoiceQuery
+---@field citizenid? string|string[]
+---@field issuer? string
+---@field status? BankingInvoiceStatus `unpaid` includes overdue ones
+---@field data? table<string, string|number|boolean> top-level `data` keys that must equal these values
+---@field limit? integer 1 to 500, default 50
+---@field before? integer an invoice id; returns older ones, for paging
+
+---@class BankingInvoiceTotalsQuery
+---@field citizenid? string|string[] also fills `owed` for these characters
+---@field issuer? string
+---@field since? integer epoch seconds that start the `billed` and `paid` window; default 7 days ago
+
+---@class BankingInvoiceTotals
+---@field unpaid integer dollars on unpaid invoices, overdue ones included
+---@field unpaidCount integer
+---@field overdue integer
+---@field overdueCount integer
+---@field billed integer dollars invoiced since `since`, void ones excluded
+---@field paid integer dollars paid since `since`
+---@field owed table<string, integer> unpaid dollars per citizenid in the filter, for those who owe any
+
+---@class BankingInvoicePayment
+---@field method? BankingInvoiceMethod default `bank`
+
+---@alias BankingInvoiceResult { ok: true, invoice: BankingInvoice }|BankingRefusal
+
 ---@class BankingCashPointView
 ---@field x number
 ---@field y number
@@ -177,7 +255,7 @@ function CobaltBankingExports:Withdraw(account, amount, details) end
 ---@return integer|string fromBalanceOrError
 function CobaltBankingExports:Transfer(from, to, amount, details) end
 
----**Server.** Credits or debits an account, frozen or not, and logs it to FiveMesh. Refuses a debit the balance can't cover.
+---**Server.** Credits or debits an account and logs it to FiveMesh. Refuses a debit the balance can't cover.
 ---@param account BankingAccountRef
 ---@param delta number a whole amount; positive credits, negative debits
 ---@param details? BankingDetails `initiator` defaults to `system`
@@ -208,7 +286,7 @@ function CobaltBankingExports:GetStatement(citizenid, accountId, query) end
 ---@return { ok: true, entry: BankingStatementEntry }|BankingRefusal
 function CobaltBankingExports:GetStatementEntry(citizenid, transactionId) end
 
----**Server.** The account behind an account number or citizen ID; nil when there is none or it is frozen.
+---**Server.** The account behind an account number or citizen ID.
 ---@param query string
 ---@return BankingRecipient?
 function CobaltBankingExports:FindRecipient(query) end
@@ -244,6 +322,43 @@ function CobaltBankingExports:InviteMember(citizenid, accountId, targetCitizenid
 ---@param targetCitizenid string
 ---@return { ok: true }|BankingRefusal
 function CobaltBankingExports:RevokeMember(citizenid, accountId, targetCitizenid) end
+
+---**Server.** Sends a character an invoice that pays into `society_<issuer>` unless `payee` says otherwise. Notifies no one.
+---@param invoice BankingInvoiceInput
+---@return BankingInvoiceResult
+function CobaltBankingExports:CreateInvoice(invoice) end
+
+---**Server.**
+---@param id integer
+---@return BankingInvoice?
+function CobaltBankingExports:GetInvoice(id) end
+
+---**Server.** Invoices matching every filter given, newest first. A malformed filter matches nothing.
+---@param filter? BankingInvoiceQuery
+---@return BankingInvoice[]
+function CobaltBankingExports:GetInvoices(filter) end
+
+---**Server.** What's owed, overdue, billed and paid across the invoices matching the filter.
+---@param filter? BankingInvoiceTotalsQuery
+---@return BankingInvoiceTotals
+function CobaltBankingExports:GetInvoiceTotals(filter) end
+
+---**Server.** Pays an unpaid invoice into its payee in one transaction, as `bill_paid` and `bill_received` statement entries with the receipt `INV-<id>`. Logs to FiveMesh and triggers the server event `cobalt_banking:invoicePaid` with the paid `BankingInvoice` and its `BankingInvoicePaidWith`.
+---@param id integer
+---@param payment? BankingInvoicePayment
+---@return BankingInvoiceResult
+function CobaltBankingExports:PayInvoice(id, payment) end
+
+---**Server.** Records that the payer turned an unpaid invoice down; it stays unpaid with `declinedAt` set.
+---@param id integer
+---@return BankingInvoiceResult
+function CobaltBankingExports:DeclineInvoice(id) end
+
+---**Server.** Cancels an unpaid invoice.
+---@param id integer
+---@param reason string up to 255 characters
+---@return BankingInvoiceResult
+function CobaltBankingExports:VoidInvoice(id, reason) end
 
 ---**Client.** The closest streamed-in ATM or bank branch to the player.
 ---@return BankingCashPointView?

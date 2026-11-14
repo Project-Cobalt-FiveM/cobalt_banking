@@ -75,7 +75,7 @@ local function payableDues(members)
         local amount <const> = paymentOf(member.job)
         local account <const> = amount > 0 and accounts[member.citizenid]
 
-        if account and account.frozen ~= 1 then
+        if account then
             dues[#dues + 1] = {
                 source = member.source,
                 citizenid = member.citizenid,
@@ -94,8 +94,6 @@ end
 ---@param dues PaycheckDue[]
 ---@return boolean paid
 local function payFromSociety(society, label, dues)
-    if society.frozen == 1 then return false end
-
     local total = 0
 
     for _, due in ipairs(dues) do

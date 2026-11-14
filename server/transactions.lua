@@ -64,7 +64,6 @@ function Transactions.Deposit(account, value, details)
     local target <const> = Accounts.Resolve(account)
 
     if not target then return false, locale('error.account_not_found') end
-    if target.frozen == 1 then return false, locale('error.account_frozen') end
 
     return applyChange(target.accountId, amount, {
         type = TransactionType.DEPOSIT,
@@ -86,7 +85,6 @@ function Transactions.Withdraw(account, value, details)
     local target <const> = Accounts.Resolve(account)
 
     if not target then return false, locale('error.account_not_found') end
-    if target.frozen == 1 then return false, locale('error.account_frozen') end
 
     return applyChange(target.accountId, -amount, {
         type = TransactionType.WITHDRAWAL,
@@ -113,7 +111,6 @@ function Transactions.Transfer(from, to, value, details)
 
     if not payer or not payee then return false, locale('error.account_not_found') end
     if payer.accountId == payee.accountId then return false, locale('error.same_account') end
-    if payer.frozen == 1 or payee.frozen == 1 then return false, locale('error.account_frozen') end
 
     local fromBalance <const> = DB.Transfer(
         payer.accountId,
@@ -171,18 +168,10 @@ function Transactions.Send(citizenid, request)
         return refuse('no_permission')
     end
 
-    if from.frozen == 1 then
-        return refuse('account_frozen')
-    end
-
     local to <const> = type(request.to) == 'string' and Accounts.FindHolder(request.to)
 
     if not to then
         return refuse('not_found')
-    end
-
-    if to.frozen == 1 then
-        return refuse('recipient_frozen')
     end
 
     if to.accountId == from.accountId then
