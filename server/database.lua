@@ -303,29 +303,6 @@ function DB.InsertMember(tx, accountId, citizenid, role)
     tx:exec('INSERT INTO bank_account_members (account_id, citizenid, role) VALUES (?, ?, ?)', { accountId, citizenid, role })
 end
 
----@param tx BankTx
----@param citizenid string
----@param amount integer
----@param limit integer
----@return boolean claimed
-function DB.ClaimWithdrawLimit(tx, citizenid, amount, limit)
-    tx:exec('INSERT IGNORE INTO bank_withdraw_limits (citizenid, day, used) VALUES (?, CURDATE(), 0)', { citizenid })
-    return tx:exec([[
-        UPDATE bank_withdraw_limits SET used = used + ?
-        WHERE citizenid = ? AND day = CURDATE() AND used + ? <= ?
-    ]], { amount, citizenid, amount, limit }) == 1
-end
-
----@param citizenid string
----@return integer
-function DB.GetWithdrawnToday(citizenid)
-    return MySQL.scalar.await('SELECT used FROM bank_withdraw_limits WHERE citizenid = ? AND day = CURDATE()', { citizenid }) or 0
-end
-
-function DB.PruneWithdrawLimits()
-    MySQL.update.await('DELETE FROM bank_withdraw_limits WHERE day < CURDATE()')
-end
-
 ---@param accountId AccountId
 ---@param days integer
 ---@return { daysAgo: integer, incoming: integer, outgoing: integer }[]

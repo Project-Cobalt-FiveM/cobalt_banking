@@ -22,6 +22,45 @@ local HISTORY_DAYS <const> = 7
 ---@type table<integer, BankSession>
 local sessions <const> = {}
 
+---@type table<string, integer>
+local withdrawn <const> = {}
+local withdrawDay = os.date('%Y-%m-%d') --[[@as string]]
+
+---@param citizenid string
+---@return integer
+local function withdrawnToday(citizenid)
+    local day <const> = os.date('%Y-%m-%d') --[[@as string]]
+
+    if day ~= withdrawDay then
+        withdrawDay = day
+        table.wipe(withdrawn)
+    end
+
+    return withdrawn[citizenid] or 0
+end
+
+---@param citizenid string
+---@param amount integer
+---@return string? day the day the amount counts against, nil when it would pass the daily limit
+local function claimWithdrawal(citizenid, amount)
+    local used <const> = withdrawnToday(citizenid) + amount
+
+    if used > config.DailyWithdrawLimit then return end
+
+    withdrawn[citizenid] = used
+
+    return withdrawDay
+end
+
+---@param citizenid string
+---@param amount integer
+---@param day string the day `claimWithdrawal` returned
+local function releaseWithdrawal(citizenid, amount, day)
+    if day ~= withdrawDay or not withdrawn[citizenid] then return end
+
+    withdrawn[citizenid] = math.max(withdrawn[citizenid] - amount, 0)
+end
+
 ---@class BankResult
 ---@field ok boolean
 ---@field error? string
@@ -211,7 +250,7 @@ lib.callback.register('cobalt_banking:overview', function(source)
         cash = Cash.GetCashAmount(source),
         accounts = accounts,
         withdrawLimit = config.DailyWithdrawLimit,
-        withdrawnToday = DB.GetWithdrawnToday(citizenid),
+        withdrawnToday = withdrawnToday(citizenid),
         transferFeePercent = config.TransferFeePercent,
         maxSharedMembers = config.MaxSharedMembers,
     }
@@ -309,27 +348,21 @@ lib.callback.register('cobalt_banking:withdraw', function(source, data)
         return fail(err)
     end
 
-    local balance, overLimit
-    DB.Atomic(function(tx)
-        if not DB.ClaimWithdrawLimit(tx, citizenid, amount, config.DailyWithdrawLimit) then
-            overLimit = true
-            return false
-        end
+    local day <const> = claimWithdrawal(citizenid, amount)
 
-        balance = tx:move(account.accountId, -amount, {
-            type = TransactionType.WITHDRAWAL,
-            description = locale('statement.cash_withdrawal'),
-            initiated_by = citizenid,
-        })
-        return balance ~= nil
-    end)
-
-    if overLimit then
-        local left <const> = config.DailyWithdrawLimit - DB.GetWithdrawnToday(citizenid)
+    if not day then
+        local left <const> = config.DailyWithdrawLimit - withdrawnToday(citizenid)
         return fail(locale('error.daily_limit', math.max(left, 0)))
     end
 
+    local balance <const> = DB.Move(account.accountId, -amount, {
+        type = TransactionType.WITHDRAWAL,
+        description = locale('statement.cash_withdrawal'),
+        initiated_by = citizenid,
+    })
+
     if not balance then
+        releaseWithdrawal(citizenid, amount, day)
         return fail(locale('error.insufficient_funds'))
     end
 
@@ -339,6 +372,7 @@ lib.callback.register('cobalt_banking:withdraw', function(source, data)
             description = locale('statement.withdrawal_refund'),
             initiated_by = citizenid,
         })
+        releaseWithdrawal(citizenid, amount, day)
 
         return fail(locale('error.cash_handover_failed'))
     end
@@ -492,7 +526,5 @@ lib.callback.register('cobalt_banking:createAccount', function(source, data)
 
     return { ok = true, accountId = accountId }
 end)
-
-CreateThread(DB.PruneWithdrawLimits)
 
 return UI

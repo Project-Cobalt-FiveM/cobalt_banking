@@ -49,15 +49,6 @@ CREATE TABLE IF NOT EXISTS `bank_transactions` (
   KEY `created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `bank_withdraw_limits` (
-  `citizenid` VARCHAR(50) NOT NULL,
-  `day` DATE NOT NULL,
-  `used` BIGINT NOT NULL DEFAULT 0,
-  PRIMARY KEY (`citizenid`, `day`),
-  KEY `day` (`day`),
-  CONSTRAINT `fk_bank_withdraw_limits_player` FOREIGN KEY (`citizenid`) REFERENCES `players` (`citizenid`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `invoices` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `issuer` VARCHAR(32) NOT NULL,
