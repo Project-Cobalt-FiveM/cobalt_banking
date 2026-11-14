@@ -1,0 +1,233 @@
+{
+    "account": {
+        "personal": "Personal Account"
+    },
+    "branch": {
+        "legion_square": "Fleeca - Legion Square",
+        "alta": "Fleeca - Alta",
+        "burton": "Fleeca - Burton",
+        "rockford_hills": "Fleeca - Rockford Hills",
+        "banham_canyon": "Fleeca - Banham Canyon",
+        "harmony": "Fleeca - Harmony"
+    },
+    "blip": {
+        "category": "Banks"
+    },
+    "cashpoint": {
+        "atm": "ATM"
+    },
+    "target": {
+        "use_atm": "Use ATM",
+        "access_banking": "Use the bank"
+    },
+    "progress": {
+        "inserting_card": "Inserting card"
+    },
+    "command": {
+        "bankadjust": {
+            "help": "Add to or take from a bank account, even while its owner is offline",
+            "account": "Account number such as CB12345678 (no spaces), or a state ID",
+            "amount": "Positive adds money, negative takes it",
+            "reason": "Reason, saved on the statement and the log"
+        }
+    },
+    "notify": {
+        "atm_out_of_service": "This ATM is out of service",
+        "deposited": "Deposited $%d",
+        "withdrew": "Withdrew $%d",
+        "paycheck": "Paycheck of $%d deposited",
+        "payday_unpaid": "Your company couldn't cover payday, so you weren't paid this time",
+        "adjust_failed": "Couldn't adjust the account: %s",
+        "adjusted": "Adjusted %s by %s. New balance: $%d"
+    },
+    "statement": {
+        "cash_deposit": "Cash deposit",
+        "cash_withdrawal": "Cash withdrawal",
+        "withdrawal_refund": "Withdrawal refund",
+        "transfer": "Transfer",
+        "transfer_fee": "Transfer fee",
+        "opening_deposit": "Opening deposit",
+        "admin_adjustment": "Adjustment by the bank",
+        "paycheck": "Paycheck from %s",
+        "payday_one": "Payday, 1 employee",
+        "payday_many": "Payday, %d employees"
+    },
+    "error": {
+        "walk_up": "Walk up to a bank or ATM first",
+        "invalid_amount": "Enter a whole dollar amount",
+        "invalid_delta": "Enter a whole dollar amount, negative to take money",
+        "invalid_opening_deposit": "Enter a whole dollar opening deposit",
+        "invalid_account_type": "That kind of account doesn't exist",
+        "account_limit": "You already have the most accounts of this kind",
+        "account_not_found": "Account not found",
+        "account_frozen": "This account is frozen",
+        "checking_frozen": "Your checking account is frozen",
+        "no_permission": "You can't move money from this account",
+        "insufficient_funds": "Not enough money in this account",
+        "not_enough_cash": "Not enough cash. You have $%d.",
+        "daily_limit": "That's over your daily limit. You can take out $%d more today.",
+        "cash_handover_failed": "The bank couldn't hand over the cash, so it went back into the account",
+        "deposit_failed": "The deposit didn't go through",
+        "same_account": "Pick a different account to send to",
+        "member_limit": "Shared accounts take up to %d members",
+        "no_state_id": "No one has state ID %s",
+        "atm_new_account": "Open new accounts at a bank counter",
+        "account_name": "Name the account, up to 32 characters",
+        "no_checking": "You need a checking account first",
+        "shared_limit": "You already have the most shared accounts allowed",
+        "opening_deposit_short": "Not enough money in checking for that deposit"
+    },
+    "transfer_error": {
+        "invalid_amount": "Enter a whole dollar amount",
+        "not_found": "Recipient account not found",
+        "no_permission": "You can't move money from this account",
+        "account_frozen": "This account is frozen",
+        "recipient_frozen": "The recipient's account is frozen",
+        "same_account": "Pick a different account to send to",
+        "insufficient_funds": "Not enough money in this account"
+    },
+    "ui": {
+        "bank": {
+            "title": "Cobalt Bank",
+            "atm": "ATM",
+            "cash_on_hand": "Cash on hand %s",
+            "accounts": "Accounts",
+            "new_shared": "New shared account",
+            "no_account": "You don't have a bank account yet"
+        },
+        "group": {
+            "personal": "Personal",
+            "shared": "Shared",
+            "society": "Society"
+        },
+        "account": {
+            "checking": "Checking",
+            "fallback": "Account",
+            "frozen": "Frozen",
+            "default": "Default",
+            "member_one": "1 member",
+            "member_many": "%d members",
+            "boss_access": "Boss access"
+        },
+        "view": {
+            "account_frozen": "Account frozen",
+            "available": "Available balance",
+            "deposit": "Deposit",
+            "withdraw": "Withdraw",
+            "transfer": "Transfer"
+        },
+        "copy": {
+            "copy": "Copy account number",
+            "copied": "Account number copied"
+        },
+        "loading": "Loading account history",
+        "chart": {
+            "title": "Balance, last 7 days",
+            "in": "In",
+            "out": "Out"
+        },
+        "activity": {
+            "title": "Recent activity",
+            "filter_label": "Filter activity",
+            "all": "All",
+            "in": "Incoming",
+            "out": "Outgoing",
+            "empty": "No activity on this account yet",
+            "empty_filter": "Nothing in this filter yet",
+            "transfer_from": "Transfer from %s",
+            "transfer_to": "Transfer to %s",
+            "paycheck_from": "Paycheck from %s",
+            "bill_paid": "Bill paid",
+            "bill_received": "Bill received",
+            "fallback": "Transaction"
+        },
+        "time": {
+            "today": "Today",
+            "today_at": "Today at %s",
+            "yesterday_at": "Yesterday at %s",
+            "day_at": "%s at %s"
+        },
+        "dialog": {
+            "close": "Close",
+            "cancel": "Cancel",
+            "amount": "Amount",
+            "from": "From",
+            "to": "To",
+            "cash": "Cash",
+            "new_balance": "New balance",
+            "only_has": "%s only has %s."
+        },
+        "deposit": {
+            "title": "Deposit",
+            "description": "Move cash from your pocket into %s.",
+            "cash_on_hand": "Cash on hand %s",
+            "all_cash": "All cash",
+            "over_cash": "You only have %s in cash.",
+            "submit": "Deposit %s"
+        },
+        "withdraw": {
+            "title": "Withdraw",
+            "description": "Take cash out of %s.",
+            "available": "Available %s",
+            "limit_after": "Resets at midnight. This withdrawal leaves %s for today.",
+            "limit_left": "Resets at midnight. %s left for today.",
+            "over_limit": "That's over today's limit. You can take out %s more.",
+            "submit": "Withdraw %s"
+        },
+        "limit": {
+            "title": "Daily limit",
+            "used": "%s of %s used",
+            "meter": "Daily limit used"
+        },
+        "transfer": {
+            "title": "Transfer",
+            "description": "Send money to another account or player.",
+            "send_from": "Send from",
+            "to_hint": "State ID or account number",
+            "reference": "Reference",
+            "reference_placeholder": "What's it for?",
+            "fee": "Fee",
+            "recipient": "Recipient",
+            "receives": "%s receives",
+            "after": "%s after",
+            "submit": "Send %s"
+        },
+        "recipient": {
+            "change": "Change recipient, currently %s",
+            "verified": "Verified",
+            "placeholder": "e.g. ABC12345 or CB 7710 2284",
+            "searching": "Looking up…",
+            "missing": "No open account matches that state ID or number."
+        },
+        "sent": {
+            "title": "Transfer sent",
+            "to": "to %s",
+            "default_reference": "Transfer",
+            "receipt": "Receipt",
+            "again": "Send another",
+            "done": "Done"
+        },
+        "new_account": {
+            "title": "New shared account",
+            "description": "Share an account with up to %d people. Society accounts come with your job.",
+            "name": "Account name",
+            "name_placeholder": "e.g. Car fund",
+            "members": "Members",
+            "deposit": "Opening deposit",
+            "from": "From %s",
+            "submit": "Create account"
+        },
+        "members": {
+            "you": "You",
+            "owner": "Owner",
+            "remove": "Remove %s",
+            "already": "They're already on the list.",
+            "not_found": "No one has state ID %s.",
+            "full": "Up to %d members",
+            "placeholder": "Add by state ID"
+        },
+        "error": {
+            "no_answer": "The bank didn't answer. Walk up to a bank or ATM and try again."
+        }
+    }
+}
