@@ -225,7 +225,7 @@ function Transactions.Send(citizenid, request)
         return refuse('insufficient_funds')
     end
 
-    local source <const> = Cobalt.Functions.GetPlayerByCitizenId(citizenid)?.PlayerData.source
+    local source <const> = Cobalt.Functions.GetPlayerByCitizenId(citizenid, true)?.PlayerData.source
 
     if source then Log.Transaction(source, 'transfer_out', amount, from.accountId) end
 

@@ -38,9 +38,9 @@ local function syncPlayerDataBank(accountId)
     local row <const> = MySQL.single.await('SELECT type, owner_cid, balance FROM bank_accounts WHERE account_id = ?', { accountId })
     if not row or row.type ~= 'personal' or not row.owner_cid then return end
 
-    local player <const> = Cobalt.Functions.GetPlayerByCitizenId(row.owner_cid)
+    local player <const> = Cobalt.Functions.GetPlayerByCitizenId(row.owner_cid, true)
 
-    if not player or player.Offline then return end
+    if not player then return end
 
     player.Functions.SyncBank(row.balance)
 end

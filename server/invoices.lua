@@ -399,7 +399,7 @@ end
 ---@return BankingInvoicePaidWith? paidWith
 ---@return BankingFailure? reason
 local function payByCash(invoice)
-    local source <const> = Cobalt.Functions.GetPlayerByCitizenId(invoice.citizenid)?.PlayerData.source
+    local source <const> = Cobalt.Functions.GetPlayerByCitizenId(invoice.citizenid, true)?.PlayerData.source
 
     if not source then
         return nil, 'payer_offline'

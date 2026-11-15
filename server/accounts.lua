@@ -172,7 +172,7 @@ local function societyRole(account, citizenid)
     if account.type ~= enums.AccountType.SOCIETY or not account.label then return end
     if GetResourceState('cobalt_management') ~= 'started' then return end
 
-    local source <const> = Cobalt.Functions.GetPlayerByCitizenId(citizenid)?.PlayerData.source
+    local source <const> = Cobalt.Functions.GetPlayerByCitizenId(citizenid, true)?.PlayerData.source
 
     if not source then return end
 
@@ -265,7 +265,7 @@ end
 ---@param citizenid string
 ---@return BankingAccessibleAccount[]
 function Accounts.ListFor(citizenid)
-    local source <const> = Cobalt.Functions.GetPlayerByCitizenId(citizenid)?.PlayerData.source
+    local source <const> = Cobalt.Functions.GetPlayerByCitizenId(citizenid, true)?.PlayerData.source
     local primaryId <const> = Accounts.GetPrimaryAccount(citizenid)?.accountId
     local list <const> = {}
 
